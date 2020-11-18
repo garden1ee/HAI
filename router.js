@@ -7,8 +7,8 @@ var app = Sammy(function () {
         $("#mainDiv").load("/pages/Upload.html");
     });
  
-    this.get("#/test1", function () {
-        $("#mainDiv").load("/pages/Test1.html");
+    this.get("#/step2", function () {
+        $("input").hide();
     });
 
     this.get("#/param/:id", function () {
@@ -28,5 +28,5 @@ var app = Sammy(function () {
  
 //어플리케이션 시작
 $(function () {
-    app.run()
+    app.run('#/')
 });

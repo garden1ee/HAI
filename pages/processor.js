@@ -11,6 +11,7 @@ let processor = {
             this.inpaint_ctx.drawImage(targetImage,0,0,550,400);
           });
           targetImage.src=window.URL.createObjectURL(image);
+          $('button').show();
       })
     },
   

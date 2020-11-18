@@ -10,4 +10,5 @@ function next() {
   step = $('li[data-step='+data+']');
   console.log(step);
   step.addClass("is-active");
+  window.location.href = "#/step2";
 }

@@ -12,7 +12,8 @@
 	 position: relative;
 	 display: table-cell;
 	 text-align: center;
-	 font-size: 0.8em;
+	 font-family: Quicksand;
+	 font-size: 0.9em;
 }
  .progress > li:before {
 	 content: attr(data-step);
@@ -44,18 +45,18 @@
 	 display: none;
 }
  .progress > li.is-complete {
-	 color: #2ecc71;
+	 color: #e7d1a8;
 }
  .progress > li.is-complete:before, .progress > li.is-complete:after {
 	 color: #fff;
-	 background: #2ecc71;
+	 background:  #e7d1a8;
 }
  .progress > li.is-active {
-	 color: #3498db;
+	 color: #eba524;
 }
  .progress > li.is-active:before {
 	 color: #fff;
-	 background: #3498db;
+	 background: #eba524;
 }
 /** * Needed for IE8 */
  .progress__last:after {
@@ -72,7 +73,7 @@
 	 margin-bottom: 3em;
 }
  a {
-	 color: #3498db;
+	 color: #eba524;
 	 text-decoration: none;
 }
  a:hover {
