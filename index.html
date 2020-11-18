@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link href="https://use.fontawesome.com/releases/v5.0.8/css/all.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand" rel="stylesheet"> 
+    <link href="./index.css" rel="stylesheet" />
+    <title>Attention!</title>
+
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="lib/sammy.js"></script>
+    <script src="./router.js"></script>
+    <script src="./index.js"></script>
+  </head>
+  <body>
+    <div style = "width:100%">
+        <ol class="progress">
+            <li class="is-active" data-step="1">
+              Step 1
+            </li>
+            <li data-step="2">
+              Step 2
+            </li>
+            <li data-step="3">
+              Step 3
+            </li>
+            <li data-step="4" class="progress__last">
+              Step 4  
+            </li>
+        </ol>
+        <a href="#/">ddd</a>
+        <div id="mainDiv">
+            <!--내용-->
+        </div>
+        <button onClick=next()>Next step</button>
+    </div>
+  </body>
+</html> 
