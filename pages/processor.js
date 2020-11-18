@@ -16,6 +16,7 @@ let processor = {
   
   };
 
-document.addEventListener("DOMContentLoaded", () => {
+//어플리케이션 시작
+$(function () {
   processor.doLoad();
 });
