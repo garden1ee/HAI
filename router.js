@@ -8,6 +8,7 @@ var app = Sammy(function () {
     });
  
     this.get("#/step2", function () {
+        startDrawing();
         $("input").hide();
     });
 

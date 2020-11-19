@@ -1,8 +1,14 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <link href="pages/Upload.css" rel="stylesheet" />
+  </head>
   <body>
-    <div>
+    <div id="canvasDiv">
       <canvas id="canvas" width="550" height="400"></canvas>
+      <canvas id="tmp_layer" width=550 height="400"></canvas>
+    </div>
+    <div>
       <input type="file" name="file" id="userUploadedImage" accept="image/*">
     </div>
     <button hidden onClick=next()>next step</button>
