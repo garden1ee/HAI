@@ -1,4 +1,6 @@
-var img_layer, img_ctx,
+var image_file, iamge,
+  img_width,img_height,
+  img_layer, img_ctx,
   cnv_layer, cnv_ctx,
   tmp_layer,tmp_ctx,
   prevX,prevY,
@@ -18,17 +20,20 @@ let processor = {
       this.elImage = document.getElementById("userUploadedImage");
 
       this.elImage.addEventListener("change", (evt)=>{
-          const image = evt.target.files[0];
-          const targetImage = new Image();
-          targetImage.addEventListener("load",(evt)=>{
-            ratio=targetImage.height/targetImage.width;
+          image_file = evt.target.files[0];
+          image = new Image();
+          image.addEventListener("load",(evt)=>{
+            ratio=image.height/image.width;
             if(ratio>(400/550)){
-              img_ctx.drawImage(targetImage,0,0,400/ratio,400)
+              img_width=400/ratio;
+              img_height=400;
             }else{
-              img_ctx.drawImage(targetImage,0,0,550,550*ratio);
+              img_width=550;
+              img_height=550*ratio;
             }
+            img_ctx.drawImage(image,0,0,img_width,img_height);
           });
-          targetImage.src=window.URL.createObjectURL(image);
+          image.src=window.URL.createObjectURL(image_file);
           $('button').show();
       })
     },
@@ -39,6 +44,28 @@ function startDrawing(){
   tmp_layer.addEventListener("mousedown",initDraw);
   tmp_layer.addEventListener("mouseup",endDraw);
   tmp_layer.addEventListener("mouseout",endDraw);
+}
+
+function convertToBinaryMap(){
+  const ctx=cnv_ctx;
+
+  var imgData=ctx.getImageData(0,0,img_width,img_height);
+  var data=imgData.data;
+  console.log(imgData.width,imgData.height);
+  var ret=[], a;
+  for(var i=0;i<imgData.height;i++){
+    a=[]
+    for(var j=0;j<imgData.width;j++){
+      index=(i*imgData.width + j)*4;
+      if(data[index +3]!= 0){
+        a[j]=1;
+      }else{
+        a[j]=0;
+      }
+    }
+    ret[i]=a;
+  }
+  return ret;
 }
 
 
@@ -72,7 +99,7 @@ function doDraw(e){
 }
 function endDraw(e){
   draw_flag=false;
-  img_ctx.drawImage(tmp_layer,0,0);
+  cnv_ctx.drawImage(tmp_layer,0,0);
   tmp_ctx.clearRect(0,0,tmp_layer.width,tmp_layer.height);
 }
 function drawLine() {
