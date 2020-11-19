@@ -4,5 +4,6 @@
     position: relative;
 }
 canvas {position: absolute;}
-#canvas{ z-index: 1; }
+#img_layer{ z-index: 0;}
+#canvas_layer{ z-index: 1; }
 #tmp_layer{ z-index: 2; }

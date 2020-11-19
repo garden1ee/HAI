@@ -1,4 +1,5 @@
-var canvas, ctx,
+var img_layer, img_ctx,
+  cnv_layer, cnv_ctx,
   tmp_layer,tmp_ctx,
   prevX,prevY,
   currX,currY;
@@ -8,9 +9,11 @@ var draw_flag=false;
 
 let processor = {
     doLoad: function() {
-      canvas = document.getElementById("canvas");
+      img_layer = document.getElementById("img_layer");
+      cnv_layer = document.getElementById("canvas_layer");
       tmp_layer=document.getElementById("tmp_layer")
-      ctx = canvas.getContext("2d");
+      img_ctx = img_layer.getContext("2d");
+      cnv_ctx = cnv_layer.getContext("2d");
       tmp_ctx=tmp_layer.getContext("2d");
       this.elImage = document.getElementById("userUploadedImage");
 
@@ -18,7 +21,12 @@ let processor = {
           const image = evt.target.files[0];
           const targetImage = new Image();
           targetImage.addEventListener("load",(evt)=>{
-            ctx.drawImage(targetImage,0,0,550,400);
+            ratio=targetImage.height/targetImage.width;
+            if(ratio>(400/550)){
+              img_ctx.drawImage(targetImage,0,0,400/ratio,400)
+            }else{
+              img_ctx.drawImage(targetImage,0,0,550,550*ratio);
+            }
           });
           targetImage.src=window.URL.createObjectURL(image);
           $('button').show();
@@ -40,7 +48,7 @@ function initDraw(e){
   currY = e.layerY;
   prevX=currX;
   prevY=currY;
-  ctx.save()
+  img_ctx.save()
 }
 function doDraw(e){
   if(draw_flag){
@@ -56,7 +64,7 @@ function doDraw(e){
         tmp_ctx.clearRect(prevX,prevY,currX-prevX,currY-prevY);
         currX=e.layerX;
         currY=e.layerY;
-        tmp_ctx.fillStyle="rgb(255,255,255,1)";
+        tmp_ctx.fillStyle="white"
         tmp_ctx.fillRect(prevX,prevY,currX-prevX,currY-prevY);
         break;
     }
@@ -64,17 +72,18 @@ function doDraw(e){
 }
 function endDraw(e){
   draw_flag=false;
-  ctx.drawImage(tmp_layer,0,0);
+  img_ctx.drawImage(tmp_layer,0,0);
   tmp_ctx.clearRect(0,0,tmp_layer.width,tmp_layer.height);
 }
 function drawLine() {
-  ctx.beginPath();
-  ctx.moveTo(prevX, prevY);
-  ctx.lineTo(currX, currY);
-  ctx.strokeStyle = "white";
-  ctx.lineWidth = lineWidth;
-  ctx.stroke();
-  ctx.closePath();
+  tmp_ctx.beginPath();
+  tmp_ctx.moveTo(prevX, prevY);
+  tmp_ctx.lineTo(currX, currY);
+  tmp_ctx.strokeStyle = "white";
+  tmp_ctx.lineWidth = lineWidth;
+  tmp_ctx.lineCap = "round";
+  tmp_ctx.stroke();
+  tmp_ctx.closePath();
 }
 
 
