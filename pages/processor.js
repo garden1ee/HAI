@@ -36,8 +36,8 @@ function startDrawing(){
 
 function initDraw(e){
   draw_flag=true;
-  currX = e.clientX - canvas.offsetLeft;
-  currY = e.clientY - canvas.offsetTop;
+  currX = e.layerX;
+  currY = e.layerY;
   prevX=currX;
   prevY=currY;
   ctx.save()
@@ -48,14 +48,14 @@ function doDraw(e){
       case "brush":
         prevX = currX;
         prevY = currY;
-        currX = e.clientX - canvas.offsetLeft;
-        currY = e.clientY - canvas.offsetTop;
+        currX = e.layerX;
+        currY = e.layerY;
         drawLine();
         break;
       case "rect":
         tmp_ctx.clearRect(prevX,prevY,currX-prevX,currY-prevY);
-        currX = e.clientX - canvas.offsetLeft;
-        currY = e.clientY - canvas.offsetTop;
+        currX=e.layerX;
+        currY=e.layerY;
         tmp_ctx.fillStyle="rgb(255,255,255,1)";
         tmp_ctx.fillRect(prevX,prevY,currX-prevX,currY-prevY);
         break;
