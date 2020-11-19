@@ -10,6 +10,7 @@ var app = Sammy(function () {
     this.get("#/step2", function () {
         startDrawing();
         $("input").hide();
+        $("#toolBox").load("/pages/Step2Components.html");
     });
 
     this.get("#/param/:id", function () {

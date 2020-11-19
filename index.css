@@ -83,4 +83,7 @@
 	 text-align: center;
 	 color: #444;
 }
- 
+.container {
+	display: flex;
+	justify-content: center;
+} 

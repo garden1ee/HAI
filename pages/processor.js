@@ -34,7 +34,7 @@ let processor = {
             img_ctx.drawImage(image,0,0,img_width,img_height);
           });
           image.src=window.URL.createObjectURL(image_file);
-          $('button').show();
+          $('#nextBtn').show();
       })
     },
   };
@@ -45,7 +45,6 @@ function startDrawing(){
   tmp_layer.addEventListener("mouseup",endDraw);
   tmp_layer.addEventListener("mouseout",endDraw);
 }
-
 function convertToBinaryMap(){
   const ctx=cnv_ctx;
 
@@ -113,6 +112,14 @@ function drawLine() {
   tmp_ctx.closePath();
 }
 
+function recrec() {
+  tool="rect";
+  document.getElementById("brushBtn").disabled=false;
+}
+function brusrush() {
+  tool="brush";
+  document.getElementById("rectBtn").disabled=false;
+}
 
 //어플리케이션 시작
 $(function () {
