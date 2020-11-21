@@ -1,5 +1,5 @@
 *__pycache__
 */.DS_Store
-engine/DeepFillv1/model_logs/*
-engine/DeepFillv2/model_logs/*
+engine/deepfillv1/model_logs/*
+engine/deepfillv2/model_logs/*
 
