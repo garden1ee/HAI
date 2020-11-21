@@ -26,7 +26,7 @@ class InpaintCAModel(Model):
     def __init__(self):
         super().__init__('InpaintCAModel')
 
-    def build_inpaint_net(self, x, mask, config=None, reuse=False,
+    def build_inpaint_net(self, x, mask, in_att=None, config=None, reuse=False,
                           training=True, padding='SAME', name='inpaint_net'):
         """Inpaint network.
 
@@ -109,7 +109,7 @@ class InpaintCAModel(Model):
                          activation=tf.nn.relu)
             
             print(f'Shape of contextual attention input: {x.shape, mask_s.shape}')
-            x, offset_flow = contextual_attention(x, x, mask_s, 3, 1, rate=2)
+            x, offset_flow, att = contextual_attention(x, x, mask_s, in_att, 3, 1, rate=2)
             print(f'Shape of contextual attention output: {x.shape}')
             
             x = gen_conv(x, 4*cnum, 3, 1, name='pmconv9')
@@ -131,7 +131,7 @@ class InpaintCAModel(Model):
             
             print(f'Shape of second-stage output: {x_stage2.shape}')
             
-        return x_stage1, x_stage2, offset_flow
+        return x_stage1, x_stage2, offset_flow, att
 
     def build_wgan_local_discriminator(self, x, reuse=False, training=True):
         with tf.variable_scope('discriminator_local', reuse=reuse):
@@ -315,7 +315,7 @@ class InpaintCAModel(Model):
         return self.build_infer_graph(batch_data, config, bbox, name)
 
 
-    def build_server_graph(self, batch_data, batch_flow=None, reuse=False, is_training=False):
+    def build_server_graph(self, batch_data, batch_att=None, reuse=False, is_training=False):
         """
         """
         # generate mask, 1 represents masked point
@@ -328,17 +328,20 @@ class InpaintCAModel(Model):
         print(f'Called: build_server_graph()')
         print(f'Shape of masked images: {batch_incomplete.shape}')
         print(f'Shape of masks: {masks.shape}')
+        if batch_att is not None:
+            print(f'Shape of attention values: {batch_att.shape}')
         
         # inpaint
-        x1, x2, flow = self.build_inpaint_net(
-            batch_incomplete, masks, reuse=reuse, training=is_training,
+        x1, x2, flow, att = self.build_inpaint_net(
+            batch_incomplete, masks, batch_att, reuse=reuse, training=is_training,
             config=None)
         batch_predict = x2
         
         flow = resize(flow, scale=x1.shape[1]//flow.shape[1], func=tf.image.resize_nearest_neighbor)
         print(f'Shape of coarse output: {x1.shape}')
         print(f'Shape of fine output: {x2.shape}')
-        print(f'Shape of attention values: {flow.shape}')
+        print(f'Shape of attention values: {att.shape}')
+        print(f'Shape of attention colormap: {flow.shape}')
         
         # apply mask and reconstruct
         batch_complete = batch_predict*masks + batch_incomplete*(1-masks)
@@ -349,6 +352,8 @@ class InpaintCAModel(Model):
         coarse_output = batch_coarse*masks + batch_incomplete*(1-masks)
         fine_output = batch_fine*masks + batch_incomplete*(1-masks)
         
+        # return tensors
         batch_ret = tf.concat([batch_complete, coarse_output, fine_output, flow], axis=2)
+        batch_att = att
         
-        return batch_ret
+        return batch_ret, batch_att

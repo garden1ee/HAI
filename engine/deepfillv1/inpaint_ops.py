@@ -222,7 +222,7 @@ def spatial_discounting_mask(config):
     return tf.constant(mask_values, dtype=tf.float32, shape=shape)
 
 
-def contextual_attention(f, b, mask=None, ksize=3, stride=1, rate=1,
+def contextual_attention(f, b, mask=None, in_att=None, ksize=3, stride=1, rate=1,
                          fuse_k=3, softmax_scale=10., training=True, fuse=True):
     """ Contextual attention layer implementation.
 
@@ -249,6 +249,8 @@ def contextual_attention(f, b, mask=None, ksize=3, stride=1, rate=1,
     print(f'Shape of background features: {b.shape}')
     if mask is not None:
         print(f'Shape of masks: {mask.shape}')
+    if in_att is not None:
+        print(f'Shape of given attention values: {in_att.shape}')
 
     # get shapes
     raw_fs = tf.shape(f)
@@ -262,7 +264,7 @@ def contextual_attention(f, b, mask=None, ksize=3, stride=1, rate=1,
     raw_w = tf.reshape(raw_w, [raw_int_bs[0], -1, kernel, kernel, raw_int_bs[3]])
     raw_w = tf.transpose(raw_w, [0, 2, 3, 4, 1])  # transpose to b*k*k*c*hw
     
-    print(f'Shape of background patches: {raw_w.shape}')
+    print(f'Shape of background patches (raw_w): {raw_w.shape}')
     
     # downscaling foreground option: downscaling both foreground and
     # background for matching and use original background for reconstruction.
@@ -271,6 +273,7 @@ def contextual_attention(f, b, mask=None, ksize=3, stride=1, rate=1,
     if mask is not None:
         mask = resize(mask, scale=1./rate, func=tf.image.resize_nearest_neighbor)
     
+    att_height, att_width = f.shape[1], f.shape[2]
     print(f'Shape of resized foreground features: {f.shape}')
     print(f'Shape of resized background features: {b.shape}')
     if mask is not None:
@@ -285,6 +288,9 @@ def contextual_attention(f, b, mask=None, ksize=3, stride=1, rate=1,
     int_bs = b.get_shape().as_list()
     w = tf.extract_image_patches(
         b, [1,ksize,ksize,1], [1,stride,stride,1], [1,1,1,1], padding='SAME')
+
+    print(f'Shape of downscaled background patches (w): {w.shape} (ksize {ksize}, stride {stride})')
+    
     w = tf.reshape(w, [int_fs[0], -1, ksize, ksize, int_fs[3]])
     w = tf.transpose(w, [0, 2, 3, 4, 1])  # transpose to b*k*k*c*hw
     
@@ -310,9 +316,17 @@ def contextual_attention(f, b, mask=None, ksize=3, stride=1, rate=1,
     scale = softmax_scale
     fuse_weight = tf.reshape(tf.eye(k), [k, k, 1, 1])
     
+    if in_att is not None:
+        in_att_groups = tf.split(in_att, int_bs[0], axis=0)
+    att = []
+    
     for idx, feat_i in enumerate(zip(f_groups, w_groups, raw_w_groups)):
         xi, wi, raw_wi = feat_i
         print(f'[{idx+1}/{len(f_groups)}]: Shapes fg {xi.shape}, bg {wi.shape}/{raw_wi.shape}')
+        
+        if in_att is not None:
+            ai = in_att_groups[idx]
+            print(f'[{idx+1}/{len(f_groups)}]: Shapes fg {xi.shape}, bg {wi.shape}/{raw_wi.shape}, att {ai.shape}')
         
         # conv for compare
         wi = wi[0]
@@ -332,21 +346,45 @@ def contextual_attention(f, b, mask=None, ksize=3, stride=1, rate=1,
             yi = tf.reshape(yi, [1, fs[2], fs[1], bs[2], bs[1]])
             yi = tf.transpose(yi, [0, 2, 1, 4, 3])
         yi = tf.reshape(yi, [1, fs[1], fs[2], bs[1]*bs[2]])
-
-        # softmax to match
-        yi *=  mm  # mask
-        yi = tf.nn.softmax(yi*scale, 3)
-        yi *=  mm  # mask
-
-        offset = tf.argmax(yi, axis=3, output_type=tf.int32)
-        offset = tf.stack([offset // fs[2], offset % fs[2]], axis=-1)
-        offsets.append(offset)
         
         # deconv for patch pasting
         # 3.1 paste center
         wi_center = raw_wi[0]
-        yi = tf.nn.conv2d_transpose(yi, wi_center, tf.concat([[1], raw_fs[1:]], axis=0), strides=[1,rate,rate,1]) / 4.
+        
+        if in_att is None:
+            print('Predict attention')
+            # softmax to match
+            yi *= mm  # mask
+            yi = tf.nn.softmax(yi*scale, 3)
+            yi *= mm  # mask
+            
+            offset = tf.argmax(yi, axis=3, output_type=tf.int32)
+            offset = tf.stack([offset // fs[2], offset % fs[2]], axis=-1)
+            offsets.append(offset)
+            
+            att.append(yi)
+            yi = tf.nn.conv2d_transpose(yi, wi_center, tf.concat([[1], raw_fs[1:]], axis=0), strides=[1,rate,rate,1]) / 4.
+            print(f'[{idx+1}/{len(f_groups)}]: Shape of attention coefficients {yi.shape}')
+            print(f'[{idx+1}/{len(f_groups)}]: Shape of patch features {raw_wi.shape}')
+            print(f'[{idx+1}/{len(f_groups)}]: Shape of patch center features {wi_center.shape}')
+        else:
+            print('Use modulated attention')
+            ai *= mm  # mask
+            
+            offset = tf.argmax(ai, axis=3, output_type=tf.int32)
+            offset = tf.stack([offset // fs[2], offset % fs[2]], axis=-1)
+            offsets.append(offset)
+            
+            att.append(ai)
+            yi = tf.nn.conv2d_transpose(ai, wi_center, tf.concat([[1], raw_fs[1:]], axis=0), strides=[1,rate,rate,1]) / 4.
+            print(f'[{idx+1}/{len(f_groups)}]: Shape of attention coefficients {ai.shape}')
+            print(f'[{idx+1}/{len(f_groups)}]: Shape of patch features {raw_wi.shape}')
+            print(f'[{idx+1}/{len(f_groups)}]: Shape of patch center features {wi_center.shape}')
+        
         y.append(yi)
+        print(f'[{idx+1}/{len(f_groups)}]: Shape of attended features {yi.shape}')
+    
+    att = tf.concat(att, axis=0)
     
     y = tf.concat(y, axis=0)
     y.set_shape(raw_int_fs)
@@ -371,7 +409,7 @@ def contextual_attention(f, b, mask=None, ksize=3, stride=1, rate=1,
     # flow = highlight_flow_tf(offsets * tf.cast(mask, tf.int32))
     if rate != 1:
         flow = resize(flow, scale=rate, func=tf.image.resize_nearest_neighbor)
-    return y, flow
+    return y, flow, att
 
 
 def test_contextual_attention(args):
