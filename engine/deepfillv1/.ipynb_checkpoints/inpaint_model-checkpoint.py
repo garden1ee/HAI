@@ -315,7 +315,7 @@ class InpaintCAModel(Model):
         return self.build_infer_graph(batch_data, config, bbox, name)
 
 
-    def build_server_graph(self, batch_data, reuse=False, is_training=False):
+    def build_server_graph(self, batch_data, batch_flow=None, reuse=False, is_training=False):
         """
         """
         # generate mask, 1 represents masked point

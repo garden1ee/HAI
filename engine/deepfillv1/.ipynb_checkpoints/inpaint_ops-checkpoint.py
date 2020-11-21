@@ -340,12 +340,13 @@ def contextual_attention(f, b, mask=None, ksize=3, stride=1, rate=1,
 
         offset = tf.argmax(yi, axis=3, output_type=tf.int32)
         offset = tf.stack([offset // fs[2], offset % fs[2]], axis=-1)
+        offsets.append(offset)
+        
         # deconv for patch pasting
         # 3.1 paste center
         wi_center = raw_wi[0]
         yi = tf.nn.conv2d_transpose(yi, wi_center, tf.concat([[1], raw_fs[1:]], axis=0), strides=[1,rate,rate,1]) / 4.
         y.append(yi)
-        offsets.append(offset)
     
     y = tf.concat(y, axis=0)
     y.set_shape(raw_int_fs)
@@ -355,7 +356,14 @@ def contextual_attention(f, b, mask=None, ksize=3, stride=1, rate=1,
     # case1: visualize optical flow: minus current position
     h_add = tf.tile(tf.reshape(tf.range(bs[1]), [1, bs[1], 1, 1]), [bs[0], 1, bs[2], 1])
     w_add = tf.tile(tf.reshape(tf.range(bs[2]), [1, 1, bs[2], 1]), [bs[0], bs[1], 1, 1])
-    offsets = offsets - tf.concat([h_add, w_add], axis=3)
+    # optical flow minus current position
+    # offsets = offsets - tf.concat([h_add, w_add], axis=3)
+    # absolute position
+    h_ctr = tf.ones((bs[0], bs[1], bs[2], 1), tf.int32) * tf.cast(bs[1], tf.int32) // 2
+    w_ctr = tf.ones((bs[0], bs[1], bs[2], 1), tf.int32) * tf.cast(bs[2], tf.int32) // 2
+    offsets = offsets - tf.concat([h_ctr, w_ctr], axis=3)
+    offsets = offsets * tf.cast(mask, tf.int32)
+    
     # to flow image
     flow = flow_to_image_tf(offsets)
     
