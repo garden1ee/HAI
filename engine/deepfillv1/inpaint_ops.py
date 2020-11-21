@@ -331,28 +331,26 @@ def contextual_attention(f, b, mask=None, in_att=None, ksize=3, stride=1, rate=1
         # conv for compare
         wi = wi[0]
         wi_normed = wi / tf.maximum(tf.sqrt(tf.reduce_sum(tf.square(wi), axis=[0,1,2])), 1e-4)
-        yi = tf.nn.conv2d(xi, wi_normed, strides=[1,1,1,1], padding="SAME")
-        
-        print(f'[{idx+1}/{len(f_groups)}]: Shape of convolved features {yi.shape}')
-        
-        # conv implementation for fuse scores to encourage large patches
-        if fuse:
-            yi = tf.reshape(yi, [1, fs[1]*fs[2], bs[1]*bs[2], 1])
-            yi = tf.nn.conv2d(yi, fuse_weight, strides=[1,1,1,1], padding='SAME')
-            yi = tf.reshape(yi, [1, fs[1], fs[2], bs[1], bs[2]])
-            yi = tf.transpose(yi, [0, 2, 1, 4, 3])
-            yi = tf.reshape(yi, [1, fs[1]*fs[2], bs[1]*bs[2], 1])
-            yi = tf.nn.conv2d(yi, fuse_weight, strides=[1,1,1,1], padding='SAME')
-            yi = tf.reshape(yi, [1, fs[2], fs[1], bs[2], bs[1]])
-            yi = tf.transpose(yi, [0, 2, 1, 4, 3])
-        yi = tf.reshape(yi, [1, fs[1], fs[2], bs[1]*bs[2]])
-        
         # deconv for patch pasting
         # 3.1 paste center
         wi_center = raw_wi[0]
         
         if in_att is None:
             print('Predict attention')
+            yi = tf.nn.conv2d(xi, wi_normed, strides=[1,1,1,1], padding="SAME")
+            print(f'[{idx+1}/{len(f_groups)}]: Shape of convolved features {yi.shape}')
+            # conv implementation for fuse scores to encourage large patches
+            if fuse:
+                yi = tf.reshape(yi, [1, fs[1]*fs[2], bs[1]*bs[2], 1])
+                yi = tf.nn.conv2d(yi, fuse_weight, strides=[1,1,1,1], padding='SAME')
+                yi = tf.reshape(yi, [1, fs[1], fs[2], bs[1], bs[2]])
+                yi = tf.transpose(yi, [0, 2, 1, 4, 3])
+                yi = tf.reshape(yi, [1, fs[1]*fs[2], bs[1]*bs[2], 1])
+                yi = tf.nn.conv2d(yi, fuse_weight, strides=[1,1,1,1], padding='SAME')
+                yi = tf.reshape(yi, [1, fs[2], fs[1], bs[2], bs[1]])
+                yi = tf.transpose(yi, [0, 2, 1, 4, 3])
+            yi = tf.reshape(yi, [1, fs[1], fs[2], bs[1]*bs[2]])
+            
             # softmax to match
             yi *= mm  # mask
             yi = tf.nn.softmax(yi*scale, 3)
