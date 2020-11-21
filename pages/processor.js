@@ -19,7 +19,7 @@ let processor = {
       cnv_ctx = cnv_layer.getContext("2d");
       tmp_ctx=tmp_layer.getContext("2d");
       colorMap = new Image();
-      colorMap.src="../colorpalette.png";
+      colorMap.src="/colorpalette.png";
       this.elImage = document.getElementById("userUploadedImage");
 
       this.elImage.addEventListener("change", (evt)=>{

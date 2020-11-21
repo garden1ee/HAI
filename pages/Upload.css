@@ -3,7 +3,7 @@
     height: 400px;
     position: relative;
 }
-canvas {position: absolute; left: 0; right:0;border: 1px solid gray;}
+canvas {position: absolute; left: 0; right:0;}
 #img_layer{ z-index: 0;}
 #canvas_layer{ z-index: 1; }
 #tmp_layer{ z-index: 2; }
