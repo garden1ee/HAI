@@ -4,19 +4,19 @@ var app = Sammy(function () {
  
     this.get("#/", function () {
         //인덱스 페이지
-        $("#mainDiv").load("/pages/Upload.html");
+        $("#mainDiv").load("./pages/Upload.html");
     });
  
     this.get("#/step2", function () {
         startDrawing();
         $("#userUploadedImage").hide();
         $("#prevBtn").show();
-        $("#toolBox").load("/pages/Step2Components.html");
+        $("#toolBox").load("./pages/Step2Components.html");
     });
 
     this.get("#/step3", function () {
         $("#step2Components").hide();
-        $("#toolBox").load("/pages/Step3Components.html");
+        $("#toolBox").load("./pages/Step3Components.html");
     });
 
     this.get("#/param/:id", function () {
