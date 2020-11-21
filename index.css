@@ -12,7 +12,7 @@
 	 position: relative;
 	 display: table-cell;
 	 text-align: center;
-	 font-family: Quicksand;
+	 font-family: 'Quicksand';
 	 font-size: 0.9em;
 }
  .progress > li:before {

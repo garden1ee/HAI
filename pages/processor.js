@@ -115,10 +115,12 @@ function drawLine() {
 function recrec() {
   tool="rect";
   document.getElementById("brushBtn").disabled=false;
+  document.getElementById("rectBtn").disabled=true;  
 }
 function brusrush() {
   tool="brush";
   document.getElementById("rectBtn").disabled=false;
+  document.getElementById("brushBtn").disabled=true;
 }
 
 //어플리케이션 시작
