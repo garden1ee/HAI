@@ -310,12 +310,17 @@ def contextual_attention(f, b, mask=None, ksize=3, stride=1, rate=1,
     scale = softmax_scale
     fuse_weight = tf.reshape(tf.eye(k), [k, k, 1, 1])
     
-    for xi, wi, raw_wi in zip(f_groups, w_groups, raw_w_groups):
+    for idx, feat_i in enumerate(zip(f_groups, w_groups, raw_w_groups)):
+        xi, wi, raw_wi = feat_i
+        print(f'[{idx+1}/{len(f_groups)}]: Shapes fg {xi.shape}, bg {wi.shape}/{raw_wi.shape}')
+        
         # conv for compare
         wi = wi[0]
         wi_normed = wi / tf.maximum(tf.sqrt(tf.reduce_sum(tf.square(wi), axis=[0,1,2])), 1e-4)
         yi = tf.nn.conv2d(xi, wi_normed, strides=[1,1,1,1], padding="SAME")
-
+        
+        print(f'[{idx+1}/{len(f_groups)}]: Shape of convolved features {yi.shape}')
+        
         # conv implementation for fuse scores to encourage large patches
         if fuse:
             yi = tf.reshape(yi, [1, fs[1]*fs[2], bs[1]*bs[2], 1])
@@ -354,7 +359,7 @@ def contextual_attention(f, b, mask=None, ksize=3, stride=1, rate=1,
     # to flow image
     flow = flow_to_image_tf(offsets)
     
-    # # case2: visualize which pixels are attended
+    # case2: visualize which pixels are attended
     # flow = highlight_flow_tf(offsets * tf.cast(mask, tf.int32))
     if rate != 1:
         flow = resize(flow, scale=rate, func=tf.image.resize_nearest_neighbor)

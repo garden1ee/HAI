@@ -335,6 +335,11 @@ class InpaintCAModel(Model):
             config=None)
         batch_predict = x2
         
+        flow = resize(flow, scale=x1.shape[1]//flow.shape[1], func=tf.image.resize_nearest_neighbor)
+        print(f'Shape of coarse output: {x1.shape}')
+        print(f'Shape of fine output: {x2.shape}')
+        print(f'Shape of attention values: {flow.shape}')
+        
         # apply mask and reconstruct
         batch_complete = batch_predict*masks + batch_incomplete*(1-masks)
         
@@ -344,6 +349,6 @@ class InpaintCAModel(Model):
         coarse_output = batch_coarse*masks + batch_incomplete*(1-masks)
         fine_output = batch_fine*masks + batch_incomplete*(1-masks)
         
-        batch_ret = tf.concat([batch_complete, coarse_output, fine_output], axis=2)
+        batch_ret = tf.concat([batch_complete, coarse_output, fine_output, flow], axis=2)
         
         return batch_ret
