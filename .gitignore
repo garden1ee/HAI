@@ -1,4 +1,5 @@
 *__pycache__
 */.DS_Store
-*/model_logs/*
+engine/DeepFillv1/model_logs/*
+engine/DeepFillv2/model_logs/*
 
