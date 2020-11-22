@@ -53,12 +53,29 @@ function startDrawing(){
 }
 function startAttending(){
   mask=convertToBinaryMap();
-  var testimg=document.getElementById("testimg");
-  testimg.src=mask;
   tool="picker";
 }
-function showResult(){
-  attention=convertToAttImage();
+
+function downloadMasks(el){
+  el.href=mask;
+}
+function downloadAttention(el){
+  el.href=convertToAttImage();
+}
+
+// function showResult(){
+//   attention=convertToAttImage();
+//   function postData(input) {
+//     $.ajax({
+//         type: "POST",
+//         url: "/reverse_pca.py",
+//         data: { param: input },
+//         success: callbackFunc
+//     });
+//   }
+// }
+function callbackFunc(response){
+  console.log(response);
 }
 
 function convertToBinaryMap(){
