@@ -6,6 +6,7 @@ var image_file, iamge, colorMap,
   prevX,prevY,
   currX,currY,
   attendX,attendY;
+var mask, attention;
 var tool="rect";
 var lineWidth=5;
 var draw_flag=false;
@@ -34,6 +35,8 @@ let processor = {
               img_width=550;
               img_height=parseInt(550*ratio);
             }
+            img_layer.width=cnv_layer.width=tmp_layer.width=img_width;
+            img_layer.height=cnv_layer.height=tmp_layer.height=img_height;
             img_ctx.drawImage(image,0,0,img_width,img_height);
           });
           image.src=window.URL.createObjectURL(image_file);
@@ -48,26 +51,36 @@ function startDrawing(){
   tmp_layer.addEventListener("mouseup",endDraw);
   tmp_layer.addEventListener("mouseout",endDraw);
 }
-function convertToBinaryMap(){
-  const ctx=cnv_ctx;
+function startAttending(){
+  mask=convertToBinaryMap();
+  var testimg=document.getElementById("testimg");
+  testimg.src=mask;
+  tool="picker";
+}
+function showResult(){
+  attention=convertToAttImage();
+}
 
-  var imgData=ctx.getImageData(0,0,img_width,img_height);
-  var data=imgData.data;
-  console.log(imgData.width,imgData.height);
-  var ret=[], a;
-  for(var i=0;i<imgData.height;i++){
-    a=[]
-    for(var j=0;j<imgData.width;j++){
-      index=(i*imgData.width + j)*4;
-      if(data[index +3]!= 0){
-        a[j]=1;
-      }else{
-        a[j]=0;
-      }
-    }
-    ret[i]=a;
-  }
-  return ret;
+function convertToBinaryMap(){
+  var canvas=document.createElement("canvas");
+  var ctx=canvas.getContext("2d");
+  canvas.width=img_width;
+  canvas.height=img_height;
+  ctx.fillStyle="black";
+  ctx.fillRect(0,0,img_width,img_height);
+  ctx.drawImage(cnv_layer,0,0);
+
+  return canvas.toDataURL("image/png");
+}
+function convertToAttImage(){
+  var canvas=document.createElement("canvas");
+  var ctx=canvas.getContext("2d");
+  canvas.width=img_width;
+  canvas.height=img_height;
+
+  ctx.drawImage(cnv_layer,0,0);
+
+  return canvas.toDataURL("image/png");
 }
 
 

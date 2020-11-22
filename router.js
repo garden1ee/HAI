@@ -15,9 +15,11 @@ var app = Sammy(function () {
     });
 
     this.get("#/step3", function () {
+        startAttending();
         $("#step2Components").hide();
         $("#toolBox").load("./pages/Step3Components.html");
     });
+
 
     this.get("#/param/:id", function () {
         //파라미터 받기
