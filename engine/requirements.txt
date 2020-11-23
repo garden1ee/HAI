@@ -1,8 +1,8 @@
-tensorflow==1.15.0
-tensorflow-estimator==1.15.1
-tensorflow-gpu==2.3.0
+tensorflow==1.5.0
+tensorflow-estimator==1.15.0
+tensorflow-gpu==1.5.0
 tensorflow-probability==0.11.0
-numpy==1.18.5
 matplotlib==3.3.1
+scikit-build
 opencv-python==4.4.0.42
-neuralgym==0.0.1 # pip install git+https://github.com/JiahuiYu/neuralgym
+git+git://github.com/JiahuiYu/neuralgym#egg=neuralgym
